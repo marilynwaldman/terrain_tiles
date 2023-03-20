@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Display a 3D Map</title>
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/pmtiles@2.5.0/dist/index.js"></script>
+  <style>
+    body { 
+      margin: 0; 
+      padding: 0;
+    }
+
+    #map { 
+      position: absolute; 
+      top: 0; 
+      bottom: 0; 
+      width: 100%; 
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+      let protocol = new pmtiles.Protocol();
+      maplibregl.addProtocol("pmtiles",protocol.tile);
+      let URL = "N035W110_N040W105.pmtiles";
+      const map = new maplibregl.Map({
+        container: 'map', // container id
+        style: {
+          version: 8,
+          sources: {
+            "openmaptiles": {
+            "type": "vector",
+            "url": "pmtiles://2017-07-03_north-america_us.pmtiles",
+            "maxzoom": 16,
+            "minzoom": 0
+           },
+           
+          
+    
+            
+            terrainSource: {
+              type: "raster-dem",
+              url: "pmtiles://" + URL,
+              tileSize: 256,
+            },
+            hillshadeSource: {
+              type: "raster-dem",
+              url: "pmtiles://" + URL,
+              tileSize: 256,
+            },
+          },
+          layers: [
+          {
+      "id": "background",
+      "type": "background",
+      
+        "paint": {
+           "background-pattern": {
+              "stops": [
+                 [8, "dot_10"],
+                 [10, "dot_10"]
+              ]
+           } 
+        }
+        
+      },  
+          {
+      id: "landcover_wood",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": [
+        "all",
+        [
+          "==",
+          "class",
+          "wood"
+        ]
+      ],
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "hsla(98, 61%, 72%, 0.7)",
+        "fill-opacity": 0.5
+      }
+    },
+            
+            {
+              id: "hills",
+              type: "hillshade",
+              source: "hillshadeSource",
+              layout: { visibility: "visible" },
+              paint: { "hillshade-shadow-color": "#473B24" },
+            },
+            {
+              "id": "park",
+              "type": "fill",
+              "source": "openmaptiles",
+              "source-layer": "park",
+              "paint": {
+                 "fill-color": "hsla(98, 41%, 72%, 1)",
+                 "fill-opacity": 0.5,
+                 "fill-outline-color": "hsla(90, 55%, 80%, 1)" 
+              }
+          },
+    {
+      "id": "waterway_river",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "waterway",
+      "filter": [
+        "==",
+        "class",
+        "river"
+      ],
+      "layout": {
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-color": "hsla(207, 73%, 57%, 1)",
+        "line-width": {
+          "base": 1.2,
+          "stops": [
+            [
+              11,
+              3.5
+            ],
+            [
+              20,
+              6
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "waterway_other",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "waterway",
+      "filter": [
+        "all",
+        [
+          "!=",
+          "class",
+          "river"
+        ]
+      ],
+      "layout": {
+        "line-cap": "round"
+      },
+      "paint": {
+        "line-color": "hsla(207, 73%, 57%, 1)",
+        "line-width": {
+          "base": 2.3,
+          "stops": [
+            [
+              11,
+              3.0
+            ],
+            [
+              20,
+              3
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "hsla(207, 73%, 57%, 1)"
+      }
+    },
+    {
+      "id": "landcover_sand",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": [
+        "all",
+        [
+          "==",
+          "class",
+          "sand"
+        ]
+      ],
+      "paint": {
+        
+        "fill-color": "hsla(31, 60%, 73%, 1)"
+      }
+    },
+
+    
+
+
+          ],
+          terrain: {
+            source: "terrainSource",
+            exaggeration: 1,
+          },
+        },
+        center: [-106.8175,39.1911], 
+        zoom: 10,
+        pitch: 61,
+        bearing: 0,
+        maxPitch: 85,
+        maxZoom: 14
+      });
+
+
+     map.addControl(
+        new maplibregl.NavigationControl({
+          visualizePitch: true,
+          showZoom: true,
+          showCompass: true,
+        })
+      );
+
+      map.addControl(
+        new maplibregl.TerrainControl({
+          source: "terrainSource",
+          exaggeration: 1,
+        })
+      );
+  
+  </script>
+</body>
+</html>
